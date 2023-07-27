@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { retry } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { retry, catchError, map } from 'rxjs/operators';
 
 import { CreatedProductDTO, Product, UpdateProductDTO } from './../models/product.model';
 import { environment } from 'src/environments/environment';
+import { throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductsService {
 
-  API_URL: string = `${environment.API_URL}'/api'`;
+  API_URL: string = `${environment.API_URL}/api`;
 
   constructor(
     private http: HttpClient
@@ -19,7 +20,13 @@ export class ProductsService {
   getAllProducts() {
     return this.http.get<Product[]>(`${this.API_URL}/products`)
     .pipe(
-      retry(3)
+      retry(3),
+      map(products => products.map(item => {
+        return {
+          ...item,
+          taxes: .19 * item.price
+        };
+      }))
     );
   }
 
@@ -30,7 +37,15 @@ export class ProductsService {
   }
 
   getProduct(id: string) {
-    return this.http.get<Product>(`${this.API_URL}/products/${id}`);
+    return this.http.get<Product>(`${this.API_URL}/products/${id}`)
+    .pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === HttpStatusCode.NoContent) {
+          return throwError('aiuda')
+        }
+        return throwError('Ups')
+      })
+    );
   }
 
   createProduct(newProduct: CreatedProductDTO) {
