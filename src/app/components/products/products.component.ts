@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Product } from '../../models/product.model';
+import { CreatedProductDTO, Product, UpdateProductDTO } from '../../models/product.model';
 
 import { StoreService } from '../../services/store.service';
 import { ProductsService } from '../../services/products.service';
@@ -16,6 +16,7 @@ export class ProductsComponent implements OnInit {
   total = 0;
   products: Product[] = [];
   showProductDetail = false;
+  productChossen: Product | undefined = undefined;
 
   constructor(
     private storeService: StoreService,
@@ -40,4 +41,49 @@ export class ProductsComponent implements OnInit {
     this.showProductDetail = !this.showProductDetail;
   }
 
+  onShowProductDetail(id: string) {
+    this.productsService.getProduct(id)
+    .subscribe((product) => {
+      this.productChossen = product;
+      this.toggleProductDetail();
+    })
+  }
+
+  createNewProduct() {
+    const product: CreatedProductDTO = {
+      title: 'Nuevo Producto',
+      description: 'keke',
+      images: ['https://picsum.photos/200', 'https://picsum.photos/200', 'https://picsum.photos/200'],
+      price: 200,
+      categoryId: 2
+    };
+    this.productsService.createProduct(product)
+    .subscribe((product) => {
+      console.log(product);
+    });
+  }
+
+  updateProduct() {
+    const product: UpdateProductDTO = {
+       title: 'titulo'
+    };
+
+    const id = this.productChossen?.id;
+    if (typeof id !== 'undefined') {
+      this.productsService.updateProduct(id, product)
+      .subscribe(data => {
+
+      });
+    }
+  }
+
+   deleteProduct() {
+    const id = this.productChossen?.id;
+    if (typeof id !== 'undefined') {
+      this.productsService.deleteProduct(id)
+      .subscribe(() => {
+
+      });;
+    }
+   }
 }
