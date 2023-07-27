@@ -4,6 +4,8 @@ import { CreatedProductDTO, Product, UpdateProductDTO } from '../../models/produ
 
 import { StoreService } from '../../services/store.service';
 import { ProductsService } from '../../services/products.service';
+import { switchMap } from 'rxjs/operators'
+import { zip } from 'rxjs'
 
 @Component({
   selector: 'app-products',
@@ -83,7 +85,7 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-   deleteProduct() {
+  deleteProduct() {
     const id = this.productChossen?.id;
     if (typeof id !== 'undefined') {
       this.productsService.deleteProduct(id)
@@ -92,4 +94,43 @@ export class ProductsComponent implements OnInit {
       });;
     }
    }
+
+   //Callback hell
+  readAndUpdateProduc(id: string) {
+    this.productsService.getProduct(id)
+    .subscribe(product => {
+      this.productsService.updateProduct(product.id, {title: 'holas'})
+      .subscribe(data => {
+        console.log(data);
+      })
+    });
+  }
+
+  //avoid callback hell
+  readAndUpdateProducWithOutCallBackHell(id: string) {
+    this.productsService.getProduct(id)
+    .pipe(
+      switchMap((product) =>  this.productsService.updateProduct(product.id, {title: ''})),
+      switchMap((product) =>  this.productsService.updateProduct(product.id, {title: ''})),
+      switchMap((product) =>  this.productsService.updateProduct(product.id, {title: ''}))
+    )
+    .subscribe(data => {
+      console.log(data);
+    });
+
+    zip(
+      this.productsService.getProduct(id),
+      this.productsService.updateProduct(id, {title: 'holas'})
+    )
+    .subscribe(response => {
+      const product = response[0];
+      const update = response[1];
+    });
+
+    this.productsService.readAndUpdate(id, {title: 'holas'})
+    .subscribe(response => {
+      const product = response[0];
+      const update = response[1];
+    });
+  }
 }
