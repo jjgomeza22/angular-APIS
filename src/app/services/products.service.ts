@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { retry } from 'rxjs/operators';
 
 import { CreatedProductDTO, Product, UpdateProductDTO } from './../models/product.model';
 
@@ -15,7 +16,10 @@ export class ProductsService {
   ) { }
 
   getAllProducts() {
-    return this.http.get<Product[]>(`${this.API_URL}/products`);
+    return this.http.get<Product[]>(`${this.API_URL}/products`)
+    .pipe(
+      retry(3)
+    );
   }
 
   getProductsByPage(limit: number, offset:number) {
