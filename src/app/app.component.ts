@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { AuthService } from './services/auth.service';
 import { UsersService } from './services/users.service';
 
@@ -7,7 +7,7 @@ import { UsersService } from './services/users.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   imgParent = '';
   showImg = true;
   token = '';
@@ -17,6 +17,10 @@ export class AppComponent {
     private userService: UsersService,
   ) {}
 
+  ngAfterViewInit(): void {
+    this.createUser();
+    this.login();
+  }
 
   onLoaded(img: string) {
     console.log('log padre', img);
@@ -45,6 +49,6 @@ export class AppComponent {
   }
 
   getProfile() {
-    this.authService.profile(this.token);
+    this.authService.profile();
   }
 }
