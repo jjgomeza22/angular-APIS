@@ -5,6 +5,7 @@ import { retry, catchError, map } from 'rxjs/operators';
 import { CreatedProductDTO, Product, UpdateProductDTO } from './../models/product.model';
 import { environment } from 'src/environments/environment';
 import { throwError, zip } from 'rxjs';
+import { checkTime } from '../interceptors/time.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -44,7 +45,9 @@ export class ProductsService {
   }
 
   getProduct(id: string) {
-    return this.http.get<Product>(`${this.API_URL}/products/${id}`)
+    return this.http.get<Product>(`${this.API_URL}/products/${id}`, {
+      context: checkTime()
+    })
     .pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === HttpStatusCode.NoContent) {
